@@ -35,7 +35,7 @@ pipeline {
 
                         echo "Starting new container on port ${PORT_MAPPING}..."
                         // Menjalankan container baru dengan file env rahasia dari Jenkins
-                        sh "docker run -d --name ${CONTAINER_NAME} -p ${PORT_MAPPING} --env-file \$ENV_FILE --restart unless-stopped ${IMAGE_NAME}:latest"
+                        sh "docker run -d --name ${CONTAINER_NAME} -p ${PORT_MAPPING} --env-file \$ENV_FILE --restart always ${IMAGE_NAME}:latest"
                     }
                 }
             }
