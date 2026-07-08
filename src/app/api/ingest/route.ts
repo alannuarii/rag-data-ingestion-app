@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
 
         const isNew = await ensureCollection(collectionName);
         if (isNew) {
-          sendEvent("success", `✅ Collection "${collectionName}" created (768-dim Cosine).`);
+          sendEvent("success", `✅ Collection "${collectionName}" created (3072-dim Cosine).`);
         } else {
           sendEvent("success", `✅ Collection "${collectionName}" already exists.`);
         }
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
         sendEvent("success", `✅ Created ${chunks.length} chunks.`);
 
         // ─── 5. Generate Embeddings ──────────────────────────────
-        sendEvent("info", `🧠 Generating embeddings for ${chunks.length} chunks via Gemini text-embedding-004...`);
+        sendEvent("info", `🧠 Generating embeddings for ${chunks.length} chunks via Gemini gemini-embedding-2...`);
 
         const embeddings = await generateEmbeddings(chunks, (completed, total) => {
           sendEvent("progress", `⏳ Embedding progress: ${completed}/${total} chunks processed.`);

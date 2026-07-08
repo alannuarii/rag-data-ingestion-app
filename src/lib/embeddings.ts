@@ -1,13 +1,13 @@
 /**
  * Google Gemini Embedding Client
  *
- * Uses the text-embedding-004 model to generate 768-dimensional embeddings.
+ * Uses the gemini-embedding-2 model to generate 3072-dimensional embeddings.
  * Supports batch processing for efficiency.
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const EMBEDDING_MODEL = "text-embedding-004";
+const EMBEDDING_MODEL = "gemini-embedding-2";
 const BATCH_SIZE = 100; // Gemini supports up to 100 texts per batch request
 
 let genAI: GoogleGenerativeAI | null = null;

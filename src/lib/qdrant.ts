@@ -7,7 +7,7 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { v4 as uuidv4 } from "uuid";
 
-const VECTOR_SIZE = 768; // Gemini text-embedding-004 dimension
+const VECTOR_SIZE = 3072; // Gemini gemini-embedding-2 dimension
 
 let client: QdrantClient | null = null;
 

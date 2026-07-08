@@ -73,7 +73,7 @@ export default function Home() {
         <footer className="mt-8 text-center text-xs text-muted-foreground/30">
           <p>
             Powered by{" "}
-            <span className="text-muted-foreground/50">Gemini text-embedding-004</span>
+            <span className="text-muted-foreground/50">Gemini gemini-embedding-2</span>
             {" · "}
             <span className="text-muted-foreground/50">Qdrant Vector DB</span>
           </p>

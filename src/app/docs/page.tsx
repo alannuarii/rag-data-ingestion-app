@@ -24,7 +24,7 @@ const steps = [
     items: [
       {
         label: "GEMINI_API_KEY",
-        value: "API Key dari Google AI Studio (makersuite.google.com). Digunakan untuk memanggil model text-embedding-004 guna menghasilkan vektor dari teks.",
+        value: "API Key dari Google AI Studio (makersuite.google.com). Digunakan untuk memanggil model gemini-embedding-2 guna menghasilkan vektor dari teks.",
       },
       {
         label: "QDRANT_URL",
@@ -227,9 +227,9 @@ const glossary = [
       "Metode pengukuran kemiripan dua vektor berdasarkan sudut di antara keduanya (bukan jarak Euclidean). Digunakan Qdrant untuk menemukan vektor yang paling mirip dengan query. Nilai 1.0 = identik, 0.0 = tidak berkaitan.",
   },
   {
-    term: "text-embedding-004",
+    term: "gemini-embedding-2",
     definition:
-      "Model embedding dari Google Gemini yang mengubah teks menjadi vektor 768 dimensi. Model ini dioptimalkan untuk tugas pencarian semantik dan retrieval, dan mendukung pemrosesan batch hingga 100 teks sekaligus.",
+      "Model embedding dari Google Gemini yang mengubah teks menjadi vektor 3072 dimensi. Model ini dioptimalkan untuk tugas pencarian semantik dan retrieval, dan mendukung pemrosesan batch hingga 100 teks sekaligus.",
   },
   {
     term: "SSE (Server-Sent Events)",
@@ -239,7 +239,7 @@ const glossary = [
   {
     term: "Dimensi Vektor",
     definition:
-      "Jumlah angka dalam satu array vektor. Model text-embedding-004 menghasilkan vektor 768 dimensi. Collection Qdrant dikonfigurasi dengan ukuran ini agar semua vektor yang disimpan kompatibel.",
+      "Jumlah angka dalam satu array vektor. Model gemini-embedding-2 menghasilkan vektor 3072 dimensi. Collection Qdrant dikonfigurasi dengan ukuran ini agar semua vektor yang disimpan kompatibel.",
   },
 ];
 
@@ -512,7 +512,7 @@ export default function DocsPage() {
 
         {/* Footer */}
         <footer className="mt-10 text-center text-xs text-muted-foreground/25">
-          <p>Universal Vector Ingestion Engine · Powered by Gemini text-embedding-004 &amp; Qdrant</p>
+          <p>Universal Vector Ingestion Engine · Powered by Gemini gemini-embedding-2 &amp; Qdrant</p>
         </footer>
       </div>
     </main>

@@ -15,8 +15,16 @@ import { StatusConsole, LogEntry } from "@/components/status-console";
 export function IngestionForm() {
   // Form state
   const [collectionName, setCollectionName] = useState("");
-  const [documentTitle, setDocumentTitle] = useState("");
+  const [collections, setCollections] = useState<string[]>([]);
+  const [showCollectionsDropdown, setShowCollectionsDropdown] = useState(false);
+  const [isLoadingCollections, setIsLoadingCollections] = useState(false);
+  
   const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+
+  const [documentTitle, setDocumentTitle] = useState("");
   const [customMetadata, setCustomMetadata] = useState<MetadataField[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [chunkSize, setChunkSize] = useState(1000);
@@ -26,6 +34,48 @@ export function IngestionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+
+  const fetchCollections = useCallback(async () => {
+    setIsLoadingCollections(true);
+    try {
+      const res = await fetch("/api/collections");
+      if (res.ok) {
+        const data = await res.json();
+        setCollections(data.collections || []);
+      }
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+    } finally {
+      setIsLoadingCollections(false);
+    }
+  }, []);
+
+  const fetchCategories = useCallback(async (colName: string) => {
+    if (!colName.trim()) {
+      setCategories([]);
+      return;
+    }
+    setIsLoadingCategories(true);
+    try {
+      const res = await fetch(`/api/categories?collection=${encodeURIComponent(colName.trim())}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data.categories || []);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchCollections();
+  }, [fetchCollections]);
+
+  React.useEffect(() => {
+    fetchCategories(collectionName);
+  }, [collectionName, fetchCategories]);
 
   const addLog = useCallback((log: LogEntry) => {
     setLogs((prev) => [...prev, log]);
@@ -123,6 +173,9 @@ export function IngestionForm() {
                 message: data.message,
                 timestamp: data.timestamp,
               });
+              if (data.type === "complete") {
+                fetchCollections();
+              }
             } catch {
               // Skip malformed SSE data
             }
@@ -140,6 +193,14 @@ export function IngestionForm() {
     }
   };
 
+  const filteredCollections = collections.filter((c) =>
+    c.toLowerCase().includes(collectionName.toLowerCase())
+  );
+
+  const filteredCategories = categories.filter((cat) =>
+    cat.toLowerCase().includes(category.toLowerCase())
+  );
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* ─── Target Collection ─────────────────────────────── */}
@@ -148,19 +209,42 @@ export function IngestionForm() {
           Target Collection
         </label>
         <div className="relative">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 z-10 pointer-events-none">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
             </svg>
           </div>
           <Input
             id="collection-name"
-            placeholder="e.g. kb_engineering, kb_legal, kb_finance"
+            placeholder="Select or type collection name..."
             value={collectionName}
-            onChange={(e) => setCollectionName(e.target.value)}
+            onChange={(e) => {
+              setCollectionName(e.target.value);
+              setShowCollectionsDropdown(true);
+            }}
+            onFocus={() => setShowCollectionsDropdown(true)}
+            onBlur={() => setShowCollectionsDropdown(false)}
             className="pl-10 h-11 bg-white/[0.03] border-white/10 placeholder:text-muted-foreground/30 focus-visible:border-violet-500/50 focus-visible:ring-violet-500/20"
             disabled={isSubmitting}
+            autoComplete="off"
           />
+          {showCollectionsDropdown && filteredCollections.length > 0 && (
+            <div className="absolute left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-lg border border-white/10 bg-[#0f0f12]/95 backdrop-blur-md shadow-2xl z-50 py-1">
+              {filteredCollections.map((name) => (
+                <div
+                  key={name}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setCollectionName(name);
+                    setShowCollectionsDropdown(false);
+                  }}
+                  className="px-4 py-2 text-sm text-foreground/80 hover:bg-violet-600 hover:text-white cursor-pointer transition-colors"
+                >
+                  {name}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <p className="text-xs text-muted-foreground/40">
           If collection doesn&apos;t exist, it will be created automatically.
@@ -186,14 +270,39 @@ export function IngestionForm() {
           <label htmlFor="category" className="text-sm font-medium text-foreground/80">
             Category / Tag
           </label>
-          <Input
-            id="category"
-            placeholder="e.g. Prosedur, Manual, Laporan"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="h-11 bg-white/[0.03] border-white/10 placeholder:text-muted-foreground/30 focus-visible:border-violet-500/50 focus-visible:ring-violet-500/20"
-            disabled={isSubmitting}
-          />
+          <div className="relative">
+            <Input
+              id="category"
+              placeholder="e.g. Prosedur, Manual, Laporan"
+              value={category}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                setShowCategoriesDropdown(true);
+              }}
+              onFocus={() => setShowCategoriesDropdown(true)}
+              onBlur={() => setShowCategoriesDropdown(false)}
+              className="h-11 bg-white/[0.03] border-white/10 placeholder:text-muted-foreground/30 focus-visible:border-violet-500/50 focus-visible:ring-violet-500/20"
+              disabled={isSubmitting}
+              autoComplete="off"
+            />
+            {showCategoriesDropdown && filteredCategories.length > 0 && (
+              <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-white/10 bg-[#0f0f12]/95 backdrop-blur-md shadow-2xl z-50 py-1">
+                {filteredCategories.map((name) => (
+                  <div
+                    key={name}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setCategory(name);
+                      setShowCategoriesDropdown(false);
+                    }}
+                    className="px-4 py-2 text-sm text-foreground/80 hover:bg-violet-600 hover:text-white cursor-pointer transition-colors"
+                  >
+                    {name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
